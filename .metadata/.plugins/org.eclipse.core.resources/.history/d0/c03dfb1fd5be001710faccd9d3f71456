@@ -1,0 +1,82 @@
+package ajax;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+import com.opensymphony.xwork2.ActionSupport;
+
+import dao.bmoney;
+import dao.javabean;
+import dao.users;
+
+public class ajax extends ActionSupport {
+	
+	private String id;
+	private String username;
+	private String password;
+	private String message;
+	private ArrayList<javabean> javalist;
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getMessage() {
+		return message;
+	}
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	public ArrayList<javabean> getJavalist() {
+		return javalist;
+	}
+	public void setJavalist(ArrayList<javabean> javalist) {
+		this.javalist = javalist;
+	}
+	@Override
+	public String execute() throws Exception {
+		// TODO Auto-generated method stub
+		String str = "conf.xml";
+		InputStream is = ajax.class.getClassLoader().getResourceAsStream(str);
+		SqlSessionFactory ssf = new SqlSessionFactoryBuilder().build(is);
+		SqlSession ss = ssf.openSession();
+		String str2 = "mapping.usermapping.getuserlist";
+		users userslist = ss.selectOne(str2,id);
+		ArrayList<bmoney> bmoneylist = userslist.getUmoney().getBmoneylist();
+		if (bmoneylist == null) {
+			message = "查询失败";
+		} else {
+			message = "查询成功" + userslist.getChname();
+			javalist = new ArrayList<javabean>();
+			for (bmoney bmoneyfor : bmoneylist) {
+				javabean jb = new javabean();
+				jb.setBid(bmoneyfor.getBid());
+				jb.setBjl(bmoneyfor.getBjl());
+				jb.setChname(userslist.getChname());
+				jb.setMid(bmoneyfor.getMid());
+				jb.setMoney(userslist.getUmoney().getMoney());
+				jb.setUid(userslist.getUid());
+				javalist.add(jb);
+			}
+		}
+		return "success";
+	}
+
+}
